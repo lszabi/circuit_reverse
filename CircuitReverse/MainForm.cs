@@ -26,7 +26,7 @@ namespace CircuitReverse
 
 			// Align BottomPanel to TopPanel
 			BottomPanel.Size = new Size(TopPanel.Size.Width, TopPanel.Size.Height);
-			BottomPanel.Location = new Point(TopPanel.Location.X + TopPanel.Size.Width + 18, BottomPanel.Location.Y);
+			BottomPanel.Location = new Point(TopPanel.Location.X + TopPanel.Size.Width + 6, BottomPanel.Location.Y);
 
 			// Align objectPropertyGrid to BottomPanel
 			objectPropertyGrid.Size = new Size(TopPanel.Size.Width, (TopPanel.Size.Height - 6) / 2);
@@ -293,8 +293,10 @@ namespace CircuitReverse
 			return false;
 		}
 
-		private void objectList_SelectedValueChanged(object sender, EventArgs e)
+		private void MainForm_Load(object sender, EventArgs e)
 		{
+			objectPropertyGrid.SelectedObject = ObjectProperties;
 		}
+
 	}
 }

@@ -79,6 +79,8 @@ namespace CircuitReverse
 
 		public abstract void DrawObject(LayerEnum target_layer, PanelTransform tform, Graphics g, bool selected = false);
 		public abstract string ExportObject();
+		public abstract List<CustomProperty> GetProperties();
+		public abstract void ChangeProperty(CustomPropertyDescriptor property);
 
 		public static AbstractObject ImportObject(string descriptor)
 		{
@@ -200,6 +202,31 @@ namespace CircuitReverse
 		{
 			return string.Format("WIRE : Net {0} : {1}", NetName, WireColor.ToKnownColor().ToString());
 		}
+
+		public override List<CustomProperty> GetProperties()
+		{
+			var props = new List<CustomProperty>();
+			props.Add(new CustomProperty("Net", NetName));
+			props.Add(new CustomProperty("Color", WireColor));
+			props.Add(new CustomProperty("Layer", layer));
+			return props;
+		}
+
+		public override void ChangeProperty(CustomPropertyDescriptor property)
+		{
+			if (property.Description == "Net")
+			{
+				NetName = property.Value as string;
+			}
+			if (property.Description == "Color")
+			{
+				WireColor = (Color)property.Value;
+			}
+			if (property.Description == "Layer")
+			{
+				layer = (LayerEnum)property.Value;
+			}
+		}
 	}
 
 	public class PinObject : AbstractObject
@@ -257,7 +284,42 @@ namespace CircuitReverse
 
 		public override string ToString()
 		{
-			return string.Format("PIN : {0} : Net {1} : {2}", "", NetName, PinColor.ToKnownColor().ToString());
+			return string.Format("PIN : {0}.{1} : Net {2} : {3}", Component, Number, NetName, PinColor.ToKnownColor().ToString());
+		}
+
+		public override List<CustomProperty> GetProperties()
+		{
+			var props = new List<CustomProperty>();
+			props.Add(new CustomProperty("Net", NetName));
+			props.Add(new CustomProperty("Color", PinColor));
+			props.Add(new CustomProperty("Layer", layer));
+			props.Add(new CustomProperty("Component", Component, "Component"));
+			props.Add(new CustomProperty("Number", Number, "Component"));
+			return props;
+		}
+
+		public override void ChangeProperty(CustomPropertyDescriptor property)
+		{
+			if (property.Description == "Net")
+			{
+				NetName = property.Value as string;
+			}
+			if (property.Description == "Color")
+			{
+				PinColor = (Color)property.Value;
+			}
+			if (property.Description == "Layer")
+			{
+				layer = (LayerEnum)property.Value;
+			}
+			if (property.Description == "Component")
+			{
+				Component = property.Value as string;
+			}
+			if (property.Description == "Number")
+			{
+				Number = property.Value as string;
+			}
 		}
 	}
 

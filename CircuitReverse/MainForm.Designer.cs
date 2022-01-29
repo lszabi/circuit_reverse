@@ -93,10 +93,12 @@
 			// 
 			// objectPropertyGrid
 			// 
+			this.objectPropertyGrid.HelpVisible = false;
 			this.objectPropertyGrid.Location = new System.Drawing.Point(588, 52);
 			this.objectPropertyGrid.Name = "objectPropertyGrid";
 			this.objectPropertyGrid.Size = new System.Drawing.Size(284, 189);
 			this.objectPropertyGrid.TabIndex = 6;
+			this.objectPropertyGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.objectPropertyGrid_PropertyValueChanged);
 			// 
 			// fileToolStripMenuItem
 			// 
@@ -330,6 +332,7 @@
 			this.MainMenuStrip = this.menuStripMain;
 			this.Name = "MainForm";
 			this.Text = "CircuitReverse";
+			this.Load += new System.EventHandler(this.MainForm_Load);
 			this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyDown);
 			this.Resize += new System.EventHandler(this.MainForm_Resize);
 			this.statusStripMain.ResumeLayout(false);
