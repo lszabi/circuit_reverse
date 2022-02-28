@@ -39,6 +39,7 @@
 			this.loadTopImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.loadBottomImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+			this.newProjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.saveProjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.saveProjectAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.openProjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -51,7 +52,8 @@
 			this.toolWire = new System.Windows.Forms.ToolStripButton();
 			this.toolPin = new System.Windows.Forms.ToolStripButton();
 			this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-			this.toolLayerSelect = new System.Windows.Forms.ToolStripComboBox();
+			this.layerSelectTop = new System.Windows.Forms.ToolStripButton();
+			this.layerSelectBottom = new System.Windows.Forms.ToolStripButton();
 			this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
 			this.objDelete = new System.Windows.Forms.ToolStripButton();
 			this.objectList = new System.Windows.Forms.ListBox();
@@ -80,7 +82,8 @@
 			// StatusLabelDefault
 			// 
 			this.StatusLabelDefault.Name = "StatusLabelDefault";
-			this.StatusLabelDefault.Size = new System.Drawing.Size(0, 17);
+			this.StatusLabelDefault.Size = new System.Drawing.Size(60, 17);
+			this.StatusLabelDefault.Text = "Welcome!";
 			// 
 			// ProjectSaveDialog
 			// 
@@ -106,6 +109,7 @@
             this.loadTopImageToolStripMenuItem,
             this.loadBottomImageToolStripMenuItem,
             this.toolStripSeparator1,
+            this.newProjectToolStripMenuItem,
             this.saveProjectToolStripMenuItem,
             this.saveProjectAsToolStripMenuItem,
             this.openProjectToolStripMenuItem});
@@ -131,6 +135,14 @@
 			// 
 			this.toolStripSeparator1.Name = "toolStripSeparator1";
 			this.toolStripSeparator1.Size = new System.Drawing.Size(176, 6);
+			// 
+			// newProjectToolStripMenuItem
+			// 
+			this.newProjectToolStripMenuItem.Image = global::CircuitReverse.Properties.Resources.NewFile_16x;
+			this.newProjectToolStripMenuItem.Name = "newProjectToolStripMenuItem";
+			this.newProjectToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
+			this.newProjectToolStripMenuItem.Text = "New project";
+			this.newProjectToolStripMenuItem.Click += new System.EventHandler(this.newProjectToolStripMenuItem_Click);
 			// 
 			// saveProjectToolStripMenuItem
 			// 
@@ -177,7 +189,8 @@
             this.toolWire,
             this.toolPin,
             this.toolStripSeparator2,
-            this.toolLayerSelect,
+            this.layerSelectTop,
+            this.layerSelectBottom,
             this.toolStripSeparator3,
             this.objDelete});
 			this.toolStripMain.Location = new System.Drawing.Point(0, 24);
@@ -193,7 +206,6 @@
 			this.buttonSave.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this.buttonSave.Name = "buttonSave";
 			this.buttonSave.Size = new System.Drawing.Size(23, 22);
-			this.buttonSave.Text = "toolStripButton2";
 			this.buttonSave.ToolTipText = "Save (Ctrl+S)";
 			this.buttonSave.Click += new System.EventHandler(this.saveProjectMenu_Click);
 			// 
@@ -204,7 +216,6 @@
 			this.buttonOpen.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this.buttonOpen.Name = "buttonOpen";
 			this.buttonOpen.Size = new System.Drawing.Size(23, 22);
-			this.buttonOpen.Text = "toolStripButton1";
 			this.buttonOpen.ToolTipText = "Open";
 			this.buttonOpen.Click += new System.EventHandler(this.openProjectMenu_Click);
 			// 
@@ -231,7 +242,6 @@
 			this.toolWire.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this.toolWire.Name = "toolWire";
 			this.toolWire.Size = new System.Drawing.Size(23, 22);
-			this.toolWire.Text = "toolStripButton1";
 			this.toolWire.ToolTipText = "Draw line (W)";
 			this.toolWire.Click += new System.EventHandler(this.BeginWire);
 			// 
@@ -243,7 +253,6 @@
 			this.toolPin.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this.toolPin.Name = "toolPin";
 			this.toolPin.Size = new System.Drawing.Size(23, 22);
-			this.toolPin.Text = "toolStripButton2";
 			this.toolPin.ToolTipText = "Draw pin (P)";
 			this.toolPin.Click += new System.EventHandler(this.BeginPin);
 			// 
@@ -252,16 +261,29 @@
 			this.toolStripSeparator2.Name = "toolStripSeparator2";
 			this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
 			// 
-			// toolLayerSelect
+			// layerSelectTop
 			// 
-			this.toolLayerSelect.Items.AddRange(new object[] {
-            "Top Layer (0)",
-            "Bottom Layer (1)",
-            "Both layers (2)"});
-			this.toolLayerSelect.Name = "toolLayerSelect";
-			this.toolLayerSelect.Size = new System.Drawing.Size(121, 25);
-			this.toolLayerSelect.Text = "Both layers (2)";
-			this.toolLayerSelect.ToolTipText = "Select layer to draw on";
+			this.layerSelectTop.Checked = true;
+			this.layerSelectTop.CheckOnClick = true;
+			this.layerSelectTop.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.layerSelectTop.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+			this.layerSelectTop.Image = global::CircuitReverse.Properties.Resources.LayerTop_16x;
+			this.layerSelectTop.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.layerSelectTop.Name = "layerSelectTop";
+			this.layerSelectTop.Size = new System.Drawing.Size(23, 22);
+			this.layerSelectTop.ToolTipText = "Top layer (1)";
+			// 
+			// layerSelectBottom
+			// 
+			this.layerSelectBottom.Checked = true;
+			this.layerSelectBottom.CheckOnClick = true;
+			this.layerSelectBottom.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.layerSelectBottom.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+			this.layerSelectBottom.Image = global::CircuitReverse.Properties.Resources.LayerBottom_16x;
+			this.layerSelectBottom.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.layerSelectBottom.Name = "layerSelectBottom";
+			this.layerSelectBottom.Size = new System.Drawing.Size(23, 22);
+			this.layerSelectBottom.ToolTipText = "Bottom layer (2)";
 			// 
 			// toolStripSeparator3
 			// 
@@ -276,7 +298,7 @@
 			this.objDelete.Name = "objDelete";
 			this.objDelete.Size = new System.Drawing.Size(23, 22);
 			this.objDelete.Text = "toolStripButton1";
-			this.objDelete.ToolTipText = "Delete object";
+			this.objDelete.ToolTipText = "Delete object (Del)";
 			this.objDelete.Click += new System.EventHandler(this.DeleteObject);
 			// 
 			// objectList
@@ -368,13 +390,15 @@
 		private System.Windows.Forms.ToolStripButton toolPin;
 		private System.Windows.Forms.ToolStripButton toolCancel;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-		private System.Windows.Forms.ToolStripComboBox toolLayerSelect;
 		public System.Windows.Forms.ListBox objectList;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
 		private System.Windows.Forms.ToolStripButton objDelete;
 		private System.Windows.Forms.ToolStripButton buttonSave;
 		private System.Windows.Forms.ToolStripButton buttonOpen;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+		private System.Windows.Forms.ToolStripMenuItem newProjectToolStripMenuItem;
+		private System.Windows.Forms.ToolStripButton layerSelectTop;
+		private System.Windows.Forms.ToolStripButton layerSelectBottom;
 	}
 }
 

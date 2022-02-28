@@ -6,6 +6,14 @@ using System.Globalization;
 
 namespace CircuitReverse
 {
+	public delegate Point PanelTransform(RelativePoint p);
+
+	public struct Crosshair
+	{
+		public RelativePoint location;
+		public bool show;
+	}
+
 	public struct RelativePoint
 	{
 		public double X, Y;
@@ -35,37 +43,30 @@ namespace CircuitReverse
 		}
 	}
 
-	public delegate Point PanelTransform(RelativePoint p);
-
 	public enum LayerEnum
 	{
-		NONE,
-		TOP,
-		BOTTOM,
-		BOTH
-	}
-
-	public enum ObjectType
-	{
-		NONE,
-		LINE
+		NONE = 0,
+		TOP = 1,
+		BOTTOM = 2,
+		BOTH = TOP | BOTTOM
 	}
 
 	// Return type to show if the active tool needs to be deleted
 	public enum ToolAction
 	{
-		NONE,
-		RESET,
-		ABORT,
-		EXIT
+		NONE,	// Do nothing
+		RESET,	// Add the created object to the object list, and restart the tool to create another object
+		ABORT,  // Drop the created object and exit the tool
+		EXIT    // Add the created object to the object list, and exit the tool
 	}
 
 	// Parent class for objects to organize into list
 	public abstract class AbstractObject
 	{
-		public ObjectType type = ObjectType.NONE;
-
 		public LayerEnum layer = LayerEnum.BOTH;
+
+		public string NetName = "";
+		public string Component = "";
 
 		public AbstractObject(LayerEnum l)
 		{
@@ -77,50 +78,73 @@ namespace CircuitReverse
 			layer = o.layer;
 		}
 
-		public abstract void DrawObject(LayerEnum target_layer, PanelTransform tform, Graphics g, bool selected = false);
-		public abstract string ExportObject();
+		public void DrawObject(LayerEnum target_layer, PanelTransform tform, Graphics g, bool selected = false)
+		{
+			if (layer != LayerEnum.BOTH && target_layer != layer)
+			{
+				// no drawing on this layer
+				return;
+			}
+
+			DrawObjectGraphics(tform, g, selected);
+		}
+
+		// Draw object graphics on the image panel(s)
+		public abstract void DrawObjectGraphics(PanelTransform tform, Graphics g, bool selected = false);
+
+		// Get the properties of the object for the ObjectPropertyGrid
 		public abstract List<CustomProperty> GetProperties();
+
+		// Import the changed properties from the ObjectPropertyGrid
 		public abstract void ChangeProperty(CustomPropertyDescriptor property);
 
+		// Save the serialized object text into the objects.txt file
+		public abstract string ExportObject();
+
+		// Load object from the objects.txt file
 		public static AbstractObject ImportObject(string descriptor)
 		{
 			var strarr = descriptor.Split(' ');
-			if (strarr.Length > 0)
+			if (strarr.Length < 1)
 			{
-				if (strarr[0] == "WIRE")
-				{
-					// Format: WIRE L{layer} '{netname}' #{color} {point1} [{point2}] ...
-					var l = (LayerEnum)Enum.Parse(typeof(LayerEnum), strarr[1].Substring(1));
-					var ret = new WireObject(l);
-
-					ret.NetName = strarr[2].Substring(1, strarr[2].Length - 2);
-					ret.WireColor = Color.FromArgb(int.Parse(strarr[3].Substring(1), NumberStyles.HexNumber));
-
-					for (int i = 4; i < strarr.Length; i++)
-					{
-						var p = new RelativePoint(strarr[i]);
-						ret.WirePoints.Add(p);
-					}
-
-					return ret;
-				}
-				else if (strarr[0] == "PIN")
-				{
-					// Format: PIN L{layer} {component}:{number} '{netname}' #{color} {location}
-					var l = (LayerEnum)Enum.Parse(typeof(LayerEnum), strarr[1].Substring(1));
-					var ret = new PinObject(l);
-
-					var properties = strarr[2].Split(':');
-					ret.Component = properties[0];
-					ret.Number = properties[1];
-
-					ret.NetName = strarr[3].Substring(1, strarr[3].Length - 2);
-					ret.PinColor = Color.FromArgb(int.Parse(strarr[4].Substring(1), NumberStyles.HexNumber));
-					ret.Location = new RelativePoint(strarr[5]);
-
-					return ret;
-				}
+				return null;
 			}
+
+			if (strarr[0] == "WIRE")
+			{
+				// Format: WIRE L{layer} '{netname}' #{color} {point1} [{point2}] ...
+				var l = (LayerEnum)Enum.Parse(typeof(LayerEnum), strarr[1].Substring(1));
+				var ret = new WireObject(l);
+
+				ret.NetName = strarr[2].Substring(1, strarr[2].Length - 2);
+				ret.WireColor = Color.FromArgb(int.Parse(strarr[3].Substring(1), NumberStyles.HexNumber));
+
+				for (int i = 4; i < strarr.Length; i++)
+				{
+					var p = new RelativePoint(strarr[i]);
+					ret.WirePoints.Add(p);
+				}
+
+				return ret;
+			}
+			
+			if (strarr[0] == "PIN")
+			{
+				// Format: PIN L{layer} {component}:{number} '{netname}' #{color} {location}
+				var l = (LayerEnum)Enum.Parse(typeof(LayerEnum), strarr[1].Substring(1));
+				var ret = new PinObject(l);
+
+				var properties = strarr[2].Split(':');
+				ret.Component = properties[0];
+				ret.Number = properties[1];
+
+				ret.NetName = strarr[3].Substring(1, strarr[3].Length - 2);
+				ret.PinColor = Color.FromArgb(int.Parse(strarr[4].Substring(1), NumberStyles.HexNumber));
+				ret.Location = new RelativePoint(strarr[5]);
+
+				return ret;
+			}
+
 			return null;
 		}
 	}
@@ -128,7 +152,6 @@ namespace CircuitReverse
 	public class WireObject : AbstractObject
 	{
 		public Color WireColor = Color.Red;
-		public string NetName = "";
 
 		public List<RelativePoint> WirePoints = new List<RelativePoint>();
 
@@ -137,12 +160,10 @@ namespace CircuitReverse
 
 		public WireObject(LayerEnum l = LayerEnum.BOTH) : base(l)
 		{
-			type = ObjectType.LINE;
 		}
 
 		public WireObject(WireObject w) : base(w)
 		{
-			type = ObjectType.LINE;
 			WireColor = w.WireColor;
 			NetName = w.NetName;
 			WirePoints = new List<RelativePoint>(w.WirePoints);
@@ -157,6 +178,7 @@ namespace CircuitReverse
 		{
 			if (selected)
 			{
+				// Highlight line
 				using (var p = new Pen(Color.FromArgb(180, WireColor), 8))
 				{
 					g.DrawLine(p, tform(p1), tform(p2));
@@ -169,14 +191,8 @@ namespace CircuitReverse
 			}
 		}
 
-		public override void DrawObject(LayerEnum target_layer, PanelTransform tform, Graphics g, bool selected = false)
+		public override void DrawObjectGraphics(PanelTransform tform, Graphics g, bool selected = false)
 		{
-			if (layer != LayerEnum.BOTH && target_layer != layer)
-			{
-				// no drawing on this layer
-				return;
-			}
-
 			for (int i = 0; i < WirePoints.Count - 1; i++)
 			{
 				DrawLine(WirePoints[i], WirePoints[i + 1], tform, g, selected);
@@ -232,14 +248,11 @@ namespace CircuitReverse
 	public class PinObject : AbstractObject
 	{
 		public Color PinColor = Color.Blue;
-		public string NetName = "";
-		public string Component = "";
 		public string Number = "0";
-		public RelativePoint Location;
+		public RelativePoint Location = new RelativePoint();
 
 		public PinObject(LayerEnum l) : base(l)
 		{
-			Location = new RelativePoint();
 		}
 
 		public PinObject(PinObject o) : base(o)
@@ -251,14 +264,8 @@ namespace CircuitReverse
 		}
 
 		// Draw pin on panel
-		public override void DrawObject(LayerEnum target_layer, PanelTransform tform, Graphics g, bool selected = false)
+		public override void DrawObjectGraphics(PanelTransform tform, Graphics g, bool selected = false)
 		{
-			if (layer != LayerEnum.BOTH && target_layer != layer)
-			{
-				// no drawing on this layer
-				return;
-			}
-
 			var loc = tform(new RelativePoint(Location.X, Location.Y));
 
 			if (selected)
@@ -328,36 +335,68 @@ namespace CircuitReverse
 	{
 		public LayerEnum ActiveLayer = LayerEnum.NONE;
 
-		public AbstractTool(int layer = 0)
+		public AbstractTool(LayerEnum layer = LayerEnum.NONE)
 		{
-			// interpret layer selection dropdown menu
-			if (layer == 0)
-			{
-				ActiveLayer = LayerEnum.TOP;
-			}
-			else if (layer == 1)
-			{
-				ActiveLayer = LayerEnum.BOTTOM;
-			}
-			else
-			{
-				ActiveLayer = LayerEnum.BOTH;
-			}
+			ActiveLayer = layer;
 		}
 
+		// Return created object and restart tool
 		public abstract AbstractObject ResetAndGetObject();
+
+		// Handle mouse clicks on the ImagePanel
 		public abstract ToolAction ClickHandler(MouseEventArgs e);
+
+		// Handle mouse movement on the ImagePanel
 		public abstract void MoveHandler(RelativePoint p);
-		public abstract void PaintHandler(LayerEnum target_layer, PanelTransform tform, Graphics g);
+
+		// Handle mouse going in and out of the ImagePanel
 		public abstract void MouseFocusHandler(bool hover);
+
+		// Handle keyboard keypresses
 		public abstract void KeyHandler(Keys key);
+
+		// Paint the object in creation
+		public abstract void PaintHandler(LayerEnum target_layer, PanelTransform tform, Graphics g);
+	}
+
+	public class SelectTool : AbstractTool
+	{
+		public SelectTool()
+		{
+		}
+
+		public override AbstractObject ResetAndGetObject()
+		{
+			return null;
+		}
+
+		public override ToolAction ClickHandler(MouseEventArgs e)
+		{
+			return ToolAction.NONE;
+		}
+
+		public override void MoveHandler(RelativePoint p)
+		{
+		}
+
+		public override void PaintHandler(LayerEnum target_layer, PanelTransform tform, Graphics g)
+		{
+		}
+
+		public override void MouseFocusHandler(bool hover)
+		{
+		}
+
+		public override void KeyHandler(Keys key)
+		{
+		}
 	}
 
 	public class WireTool : AbstractTool
 	{
 		public WireObject wire;
 
-		public WireTool(int layer = 0, bool mouseover = false) : base(layer)
+		public WireTool(LayerEnum layer, bool mouseover = false) : base(layer)
 		{
 			ResetAndGetObject();
 			wire.ShowActivePoint = mouseover;
@@ -389,6 +428,12 @@ namespace CircuitReverse
 			// right click ends wire and begins a new one
 			if (e.Button == MouseButtons.Right)
 			{
+				// exit tool if it has no points
+				if (wire.WirePoints.Count == 0)
+				{
+					return ToolAction.ABORT;
+				}
+
 				// save wire if it has at least 2 points
 				if (wire.WirePoints.Count >= 2)
 				{
@@ -434,7 +479,7 @@ namespace CircuitReverse
 		PinObject pin;
 		bool show = false;
 
-		public PinTool(int layer = 0, bool mouseover = false) : base(layer)
+		public PinTool(LayerEnum layer, bool mouseover = false) : base(layer)
 		{
 			pin = new PinObject(ActiveLayer);
 			show = mouseover;
