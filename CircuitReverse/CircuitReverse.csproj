@@ -49,6 +49,9 @@
     <Compile Include="BufferedPanel.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="MultiSelectTreeview.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Objects.cs" />
     <Compile Include="ImageClipper.cs" />
     <Compile Include="MatrixInv.cs" />

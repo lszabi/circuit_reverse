@@ -29,6 +29,7 @@
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			this.RefreshTimer = new System.Windows.Forms.Timer(this.components);
 			this.statusStripMain = new System.Windows.Forms.StatusStrip();
 			this.StatusLabelDefault = new System.Windows.Forms.ToolStripStatusLabel();
@@ -56,9 +57,9 @@
 			this.layerSelectBottom = new System.Windows.Forms.ToolStripButton();
 			this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
 			this.objDelete = new System.Windows.Forms.ToolStripButton();
-			this.objectList = new System.Windows.Forms.ListBox();
 			this.BottomPanel = new CircuitReverse.BufferedPanel();
 			this.TopPanel = new CircuitReverse.BufferedPanel();
+			this.objectTreeView = new CircuitReverse.MultiSelectTreeview();
 			this.statusStripMain.SuspendLayout();
 			this.menuStripMain.SuspendLayout();
 			this.toolStripMain.SuspendLayout();
@@ -271,7 +272,7 @@
 			this.layerSelectTop.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this.layerSelectTop.Name = "layerSelectTop";
 			this.layerSelectTop.Size = new System.Drawing.Size(23, 22);
-			this.layerSelectTop.ToolTipText = "Top layer (1)";
+			this.layerSelectTop.ToolTipText = "Use Top layer (1)";
 			// 
 			// layerSelectBottom
 			// 
@@ -283,7 +284,7 @@
 			this.layerSelectBottom.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this.layerSelectBottom.Name = "layerSelectBottom";
 			this.layerSelectBottom.Size = new System.Drawing.Size(23, 22);
-			this.layerSelectBottom.ToolTipText = "Bottom layer (2)";
+			this.layerSelectBottom.ToolTipText = "Use Bottom layer (2)";
 			// 
 			// toolStripSeparator3
 			// 
@@ -300,16 +301,6 @@
 			this.objDelete.Text = "toolStripButton1";
 			this.objDelete.ToolTipText = "Delete object (Del)";
 			this.objDelete.Click += new System.EventHandler(this.DeleteObject);
-			// 
-			// objectList
-			// 
-			this.objectList.FormattingEnabled = true;
-			this.objectList.Location = new System.Drawing.Point(588, 247);
-			this.objectList.Name = "objectList";
-			this.objectList.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
-			this.objectList.Size = new System.Drawing.Size(284, 186);
-			this.objectList.TabIndex = 8;
-			this.objectList.SelectedValueChanged += new System.EventHandler(this.objectList_SelectedValueChanged);
 			// 
 			// BottomPanel
 			// 
@@ -337,12 +328,20 @@
 			this.TopPanel.MouseLeave += new System.EventHandler(this.ImgPanelMouseLeave);
 			this.TopPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.ImgPanelMouseMove);
 			// 
+			// objectTreeView
+			// 
+			this.objectTreeView.Location = new System.Drawing.Point(588, 247);
+			this.objectTreeView.Name = "objectTreeView";
+			this.objectTreeView.SelectedNodes = ((System.Collections.Generic.List<System.Windows.Forms.TreeNode>)(resources.GetObject("objectTreeView.SelectedNodes")));
+			this.objectTreeView.Size = new System.Drawing.Size(284, 189);
+			this.objectTreeView.TabIndex = 8;
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(884, 461);
-			this.Controls.Add(this.objectList);
+			this.Controls.Add(this.objectTreeView);
 			this.Controls.Add(this.toolStripMain);
 			this.Controls.Add(this.objectPropertyGrid);
 			this.Controls.Add(this.statusStripMain);
@@ -371,6 +370,7 @@
 		#endregion
 		private BufferedPanel TopPanel;
 		private BufferedPanel BottomPanel;
+		private MultiSelectTreeview objectTreeView;
 		private System.Windows.Forms.Timer RefreshTimer;
 		private System.Windows.Forms.StatusStrip statusStripMain;
 		private System.Windows.Forms.ToolStripStatusLabel StatusLabelDefault;
@@ -390,7 +390,6 @@
 		private System.Windows.Forms.ToolStripButton toolPin;
 		private System.Windows.Forms.ToolStripButton toolCancel;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-		public System.Windows.Forms.ListBox objectList;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
 		private System.Windows.Forms.ToolStripButton objDelete;
 		private System.Windows.Forms.ToolStripButton buttonSave;

@@ -67,6 +67,8 @@ namespace CircuitReverse
 
 		public string NetName = "";
 		public string Component = "";
+		public int Size = 1;
+		public Color ObjectColor = Color.White;
 
 		public AbstractObject(LayerEnum l)
 		{
@@ -76,6 +78,10 @@ namespace CircuitReverse
 		public AbstractObject(AbstractObject o)
 		{
 			layer = o.layer;
+			NetName = o.NetName;
+			Component = o.Component;
+			Size = o.Size;
+			ObjectColor = o.ObjectColor;
 		}
 
 		public void DrawObject(LayerEnum target_layer, PanelTransform tform, Graphics g, bool selected = false)
@@ -92,14 +98,45 @@ namespace CircuitReverse
 		// Draw object graphics on the image panel(s)
 		public abstract void DrawObjectGraphics(PanelTransform tform, Graphics g, bool selected = false);
 
-		// Get the properties of the object for the ObjectPropertyGrid
-		public abstract List<CustomProperty> GetProperties();
-
-		// Import the changed properties from the ObjectPropertyGrid
-		public abstract void ChangeProperty(CustomPropertyDescriptor property);
-
 		// Save the serialized object text into the objects.txt file
 		public abstract string ExportObject();
+
+		// Get the properties of the object for the ObjectPropertyGrid
+		public virtual List<CustomProperty> GetProperties()
+		{
+			var props = new List<CustomProperty>();
+			props.Add(new CustomProperty("Net", NetName));
+			props.Add(new CustomProperty("Layer", layer));
+			props.Add(new CustomProperty("Size", Size));
+			props.Add(new CustomProperty("Component", Component));
+			props.Add(new CustomProperty("Color", ObjectColor));
+			return props;
+		}
+
+		// Import the changed properties from the ObjectPropertyGrid
+		public virtual void ChangeProperty(CustomPropertyDescriptor property)
+		{
+			if (property.Description == "Net")
+			{
+				NetName = property.Value as string;
+			}
+			if (property.Description == "Layer")
+			{
+				layer = (LayerEnum)property.Value;
+			}
+			if (property.Description == "Size")
+			{
+				Size = (int)property.Value;
+			}
+			if (property.Description == "Component")
+			{
+				Component = (string)property.Value;
+			}
+			if (property.Description == "Color")
+			{
+				ObjectColor = (Color)property.Value;
+			}
+		}
 
 		// Load object from the objects.txt file
 		public static AbstractObject ImportObject(string descriptor)
@@ -117,7 +154,7 @@ namespace CircuitReverse
 				var ret = new WireObject(l);
 
 				ret.NetName = strarr[2].Substring(1, strarr[2].Length - 2);
-				ret.WireColor = Color.FromArgb(int.Parse(strarr[3].Substring(1), NumberStyles.HexNumber));
+				ret.ObjectColor = Color.FromArgb(int.Parse(strarr[3].Substring(1), NumberStyles.HexNumber));
 
 				for (int i = 4; i < strarr.Length; i++)
 				{
@@ -139,7 +176,7 @@ namespace CircuitReverse
 				ret.Number = properties[1];
 
 				ret.NetName = strarr[3].Substring(1, strarr[3].Length - 2);
-				ret.PinColor = Color.FromArgb(int.Parse(strarr[4].Substring(1), NumberStyles.HexNumber));
+				ret.ObjectColor = Color.FromArgb(int.Parse(strarr[4].Substring(1), NumberStyles.HexNumber));
 				ret.Location = new RelativePoint(strarr[5]);
 
 				return ret;
@@ -151,8 +188,6 @@ namespace CircuitReverse
 
 	public class WireObject : AbstractObject
 	{
-		public Color WireColor = Color.Red;
-
 		public List<RelativePoint> WirePoints = new List<RelativePoint>();
 
 		public RelativePoint ActivePoint = new RelativePoint(0, 0);
@@ -160,12 +195,12 @@ namespace CircuitReverse
 
 		public WireObject(LayerEnum l = LayerEnum.BOTH) : base(l)
 		{
+			ObjectColor = Color.Red;
+			Size = 4;
 		}
 
 		public WireObject(WireObject w) : base(w)
 		{
-			WireColor = w.WireColor;
-			NetName = w.NetName;
 			WirePoints = new List<RelativePoint>(w.WirePoints);
 		}
 
@@ -179,13 +214,13 @@ namespace CircuitReverse
 			if (selected)
 			{
 				// Highlight line
-				using (var p = new Pen(Color.FromArgb(180, WireColor), 8))
+				using (var p = new Pen(Color.FromArgb(180, ObjectColor), 3 * Size / 2))
 				{
 					g.DrawLine(p, tform(p1), tform(p2));
 				}
 			}
 
-			using (var p = new Pen(WireColor, 4))
+			using (var p = new Pen(ObjectColor, Size))
 			{
 				g.DrawLine(p, tform(p1), tform(p2));
 			}
@@ -206,7 +241,7 @@ namespace CircuitReverse
 
 		public override string ExportObject()
 		{
-			string exp = string.Format("WIRE L{0} '{1}' #{2}", layer.ToString(), NetName, WireColor.ToArgb().ToString("X8"));
+			string exp = string.Format("WIRE L{0} '{1}' #{2}", layer.ToString(), NetName, ObjectColor.ToArgb().ToString("X8"));
 			foreach (var p in WirePoints)
 			{
 				exp += " " + p.ToString();
@@ -216,49 +251,33 @@ namespace CircuitReverse
 
 		public override string ToString()
 		{
-			return string.Format("WIRE : Net {0} : {1}", NetName, WireColor.ToKnownColor().ToString());
+			return string.Format("WIRE : Net {0} : {1}", NetName, ObjectColor.ToKnownColor().ToString());
 		}
 
 		public override List<CustomProperty> GetProperties()
 		{
-			var props = new List<CustomProperty>();
-			props.Add(new CustomProperty("Net", NetName));
-			props.Add(new CustomProperty("Color", WireColor));
-			props.Add(new CustomProperty("Layer", layer));
-			return props;
+			return base.GetProperties();
 		}
 
 		public override void ChangeProperty(CustomPropertyDescriptor property)
 		{
-			if (property.Description == "Net")
-			{
-				NetName = property.Value as string;
-			}
-			if (property.Description == "Color")
-			{
-				WireColor = (Color)property.Value;
-			}
-			if (property.Description == "Layer")
-			{
-				layer = (LayerEnum)property.Value;
-			}
+			base.ChangeProperty(property);
 		}
 	}
 
 	public class PinObject : AbstractObject
 	{
-		public Color PinColor = Color.Blue;
 		public string Number = "0";
 		public RelativePoint Location = new RelativePoint();
 
 		public PinObject(LayerEnum l) : base(l)
 		{
+			Size = 2;
+			ObjectColor = Color.Blue;
 		}
 
 		public PinObject(PinObject o) : base(o)
 		{
-			PinColor = o.PinColor;
-			NetName = o.NetName;
 			Number = o.Number;
 			Location = o.Location;
 		}
@@ -270,14 +289,14 @@ namespace CircuitReverse
 
 			if (selected)
 			{
-				using (var p = new Pen(Color.FromArgb(180, PinColor), 6))
+				using (var p = new Pen(Color.FromArgb(180, ObjectColor), 3 * Size / 2))
 				{
 					const int hs = 7;
 					g.DrawRectangle(p, loc.X - hs, loc.Y - hs, hs * 2, hs * 2);
 				}
 			}
 
-			using (var p = new Pen(PinColor, 2))
+			using (var p = new Pen(ObjectColor, Size))
 			{
 				const int hs = 5;
 				g.DrawRectangle(p, loc.X - hs, loc.Y - hs, hs * 2, hs * 2);
@@ -286,43 +305,24 @@ namespace CircuitReverse
 
 		public override string ExportObject()
 		{
-			return string.Format("PIN L{0} {1}:{2} '{3}' #{4} {5}", layer.ToString(), Component, Number, NetName, PinColor.ToArgb().ToString("X8"), Location.ToString());
+			return string.Format("PIN L{0} {1}:{2} '{3}' #{4} {5}", layer.ToString(), Component, Number, NetName, ObjectColor.ToArgb().ToString("X8"), Location.ToString());
 		}
 
 		public override string ToString()
 		{
-			return string.Format("PIN : {0}.{1} : Net {2} : {3}", Component, Number, NetName, PinColor.ToKnownColor().ToString());
+			return string.Format("PIN : {0}.{1} : Net {2} : {3}", Component, Number, NetName, ObjectColor.ToKnownColor().ToString());
 		}
 
 		public override List<CustomProperty> GetProperties()
 		{
-			var props = new List<CustomProperty>();
-			props.Add(new CustomProperty("Net", NetName));
-			props.Add(new CustomProperty("Color", PinColor));
-			props.Add(new CustomProperty("Layer", layer));
-			props.Add(new CustomProperty("Component", Component, "Component"));
+			var props = base.GetProperties();
 			props.Add(new CustomProperty("Number", Number, "Component"));
 			return props;
 		}
 
 		public override void ChangeProperty(CustomPropertyDescriptor property)
 		{
-			if (property.Description == "Net")
-			{
-				NetName = property.Value as string;
-			}
-			if (property.Description == "Color")
-			{
-				PinColor = (Color)property.Value;
-			}
-			if (property.Description == "Layer")
-			{
-				layer = (LayerEnum)property.Value;
-			}
-			if (property.Description == "Component")
-			{
-				Component = property.Value as string;
-			}
+			base.ChangeProperty(property);
 			if (property.Description == "Number")
 			{
 				Number = property.Value as string;

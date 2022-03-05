@@ -18,6 +18,10 @@ namespace CircuitReverse
 		// Active command
 		public AbstractTool ActiveTool = new SelectTool();
 
+		// List containing all objects
+		// made static, so the Select Tool can see it
+		public static List<AbstractObject> ObjectList = new List<AbstractObject>();
+
 		// Property list container
 		private PropertyList ObjectProperties = new PropertyList();
 
@@ -56,9 +60,9 @@ namespace CircuitReverse
 			objectPropertyGrid.Size = new Size(thirdwidth, halfheight);
 			objectPropertyGrid.Location = new Point(left, objectPropertyGrid.Location.Y);
 
-			// Align objectList to objectPropertyGrid
-			objectList.Size = new Size(thirdwidth, halfheight);
-			objectList.Location = new Point(left, 52 + 6 + halfheight);
+			// Align objectTreeView to objectPropertyGrid
+			objectTreeView.Size = new Size(thirdwidth, halfheight);
+			objectTreeView.Location = new Point(left, 52 + 6 + halfheight);
 		}
 
 		// Load images by using LoadImageForm as a dialog
@@ -98,6 +102,7 @@ namespace CircuitReverse
 
 			if (!p.ImageLoaded())
 			{
+				// Nothing to paint if no image is loaded
 				return;
 			}
 
@@ -105,11 +110,11 @@ namespace CircuitReverse
 
 			ActiveTool.PaintHandler(p.Layer, p.RelativeToPanel, g);
 
-			var selectedIndexes = objectList.SelectedIndices;
-			for (int i = 0; i < objectList.Items.Count; i++)
+			// Draw all objects, highlight the selected ones
+			for (int i = 0; i < ObjectList.Count; i++)
 			{
-				AbstractObject obj = objectList.Items[i] as AbstractObject;
-				obj.DrawObject(p.Layer, p.RelativeToPanel, g, selectedIndexes.Contains(i));
+				AbstractObject obj = ObjectList[i] as AbstractObject;
+				obj.DrawObject(p.Layer, p.RelativeToPanel, g, IsObjectIndexSelected(i));
 			}
 
 			p.DrawPanelCrosshair(g, crosshair);
@@ -120,14 +125,16 @@ namespace CircuitReverse
 			statusStripMain.Items["statusLabelDefault"].Text = value;
 		}
 
-		// Create new project
+		// Create new project (reset all project related variables)
 		private void ResetProject()
 		{
 			CancelTool();
-			ProjectFilePath = "";
-			objectList.Items.Clear();
+			ObjectList.Clear();
+			RefreshObjectTreeView();
+
 			TopPanel.img = null;
 			BottomPanel.img = null;
+			ProjectFilePath = "";
 			Text = "CircuitReverse";
 		}
 
@@ -172,7 +179,7 @@ namespace CircuitReverse
 			{
 				using (var s = new StreamWriter(e))
 				{
-					foreach (AbstractObject item in objectList.Items)
+					foreach (AbstractObject item in ObjectList)
 					{
 						s.WriteLine(item.ExportObject());
 					}
@@ -184,6 +191,7 @@ namespace CircuitReverse
 		{
 			if (ProjectFilePath == "" || saveas)
 			{
+				// Save project into a new file
 				if (ProjectSaveDialog.ShowDialog() != DialogResult.OK)
 				{
 					return;
@@ -202,6 +210,7 @@ namespace CircuitReverse
 			SetStatusText("Project saved");
 		}
 
+		// Load images and objects from project files
 		private void OpenPanelImg(BufferedPanel panel, ZipArchive archive, string entryName)
 		{
 			var entry = archive.GetEntry(entryName);
@@ -234,11 +243,13 @@ namespace CircuitReverse
 						var obj = AbstractObject.ImportObject(str);
 						if (!(obj is null))
 						{
-							objectList.Items.Add(obj);
+							ObjectList.Add(obj);
 						}
 					}
 				}
 			}
+
+			RefreshObjectTreeView();
 		}
 
 		private void openProjectMenu_Click(object sender, EventArgs e)
@@ -331,7 +342,8 @@ namespace CircuitReverse
 			// if the tool is resetting or exiting, save the object
 			if (action == ToolAction.RESET || action == ToolAction.EXIT)
 			{
-				objectList.Items.Add(ActiveTool.ResetAndGetObject());
+				ObjectList.Add(ActiveTool.ResetAndGetObject());
+				RefreshObjectTreeView();
 			}
 
 			// if the tool is aborting or exiting, delete the object
@@ -386,25 +398,42 @@ namespace CircuitReverse
 			ActiveTool = new SelectTool();
 			toolWire.Checked = false;
 			toolPin.Checked = false;
-			objectList.ClearSelected();
+			objectTreeView.SelectedNodes = null;
 		}
 
 		public void DeleteObject(object s, EventArgs e)
 		{
-			var selected = objectList.SelectedIndices;
-			for (int i = objectList.Items.Count - 1; i >= 0; i--)
+			for (int i = ObjectList.Count - 1; i >= 0; i--)
 			{
-				if (selected.Contains(i))
+				if (IsObjectIndexSelected(i))
 				{
-					objectList.Items.RemoveAt(i);
+					ObjectList.RemoveAt(i);
 				}
 			}
 		}
 
+		public void RefreshObjectTreeView()
+		{
+			for (int i = 0; i < ObjectList.Count; i++)
+			{
+				var t = new TreeNode(ObjectList[i].ToString())
+				{
+					Tag = i
+				};
+				objectTreeView.Nodes.Add(t);
+			}
+		}
+
+		public bool IsObjectIndexSelected(int i)
+		{
+			return objectTreeView.SelectedNodes.Exists(x => (int)x.Tag == i);
+		}
+
+		/*
 		private void objectList_SelectedValueChanged(object sender, EventArgs e)
 		{
 			ObjectProperties.Clear();
-
+			
 			// get properties from first item
 			var selected = objectList.SelectedItems;
 			if (selected.Count < 1)
@@ -432,10 +461,11 @@ namespace CircuitReverse
 
 			ObjectProperties.Add(properties.ToArray());
 			objectPropertyGrid.Refresh();
-		}
+		}*/
 
 		private void objectPropertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
-		{
+		{/*
+			// Refresh changed properties in objects
 			var change = e.ChangedItem.PropertyDescriptor as CustomPropertyDescriptor;
 			foreach (var item in objectList.SelectedItems)
 			{
@@ -445,7 +475,7 @@ namespace CircuitReverse
 
 			// refresh objectList texts
 			objectList.DrawMode = DrawMode.OwnerDrawVariable;
-			objectList.DrawMode = DrawMode.Normal;
+			objectList.DrawMode = DrawMode.Normal;*/
 		}
 	}
 }
