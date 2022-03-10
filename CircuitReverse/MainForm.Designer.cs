@@ -52,14 +52,15 @@
 			this.toolCancel = new System.Windows.Forms.ToolStripButton();
 			this.toolWire = new System.Windows.Forms.ToolStripButton();
 			this.toolPin = new System.Windows.Forms.ToolStripButton();
+			this.toolText = new System.Windows.Forms.ToolStripButton();
 			this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
 			this.layerSelectTop = new System.Windows.Forms.ToolStripButton();
 			this.layerSelectBottom = new System.Windows.Forms.ToolStripButton();
 			this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
 			this.objDelete = new System.Windows.Forms.ToolStripButton();
+			this.objectTreeView = new CircuitReverse.MultiSelectTreeview();
 			this.BottomPanel = new CircuitReverse.BufferedPanel();
 			this.TopPanel = new CircuitReverse.BufferedPanel();
-			this.objectTreeView = new CircuitReverse.MultiSelectTreeview();
 			this.statusStripMain.SuspendLayout();
 			this.menuStripMain.SuspendLayout();
 			this.toolStripMain.SuspendLayout();
@@ -189,6 +190,7 @@
             this.toolCancel,
             this.toolWire,
             this.toolPin,
+            this.toolText,
             this.toolStripSeparator2,
             this.layerSelectTop,
             this.layerSelectBottom,
@@ -237,7 +239,6 @@
 			// 
 			// toolWire
 			// 
-			this.toolWire.CheckOnClick = true;
 			this.toolWire.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
 			this.toolWire.Image = global::CircuitReverse.Properties.Resources.AssociationRelationship_16x;
 			this.toolWire.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -248,7 +249,6 @@
 			// 
 			// toolPin
 			// 
-			this.toolPin.CheckOnClick = true;
 			this.toolPin.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
 			this.toolPin.Image = global::CircuitReverse.Properties.Resources.Pin_16x;
 			this.toolPin.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -256,6 +256,16 @@
 			this.toolPin.Size = new System.Drawing.Size(23, 22);
 			this.toolPin.ToolTipText = "Draw pin (P)";
 			this.toolPin.Click += new System.EventHandler(this.BeginPin);
+			// 
+			// toolText
+			// 
+			this.toolText.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+			this.toolText.Image = global::CircuitReverse.Properties.Resources.TextElement_16x;
+			this.toolText.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.toolText.Name = "toolText";
+			this.toolText.Size = new System.Drawing.Size(23, 22);
+			this.toolText.ToolTipText = "Draw text (T)";
+			this.toolText.Click += new System.EventHandler(this.BeginText);
 			// 
 			// toolStripSeparator2
 			// 
@@ -302,6 +312,15 @@
 			this.objDelete.ToolTipText = "Delete object (Del)";
 			this.objDelete.Click += new System.EventHandler(this.DeleteObject);
 			// 
+			// objectTreeView
+			// 
+			this.objectTreeView.Location = new System.Drawing.Point(588, 247);
+			this.objectTreeView.Name = "objectTreeView";
+			this.objectTreeView.SelectedNodes = ((System.Collections.Generic.List<System.Windows.Forms.TreeNode>)(resources.GetObject("objectTreeView.SelectedNodes")));
+			this.objectTreeView.Size = new System.Drawing.Size(284, 189);
+			this.objectTreeView.TabIndex = 8;
+			this.objectTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.objectTreeView_AfterSelect);
+			// 
 			// BottomPanel
 			// 
 			this.BottomPanel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
@@ -327,15 +346,6 @@
 			this.TopPanel.MouseEnter += new System.EventHandler(this.ImgPanelMouseEnter);
 			this.TopPanel.MouseLeave += new System.EventHandler(this.ImgPanelMouseLeave);
 			this.TopPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.ImgPanelMouseMove);
-			// 
-			// objectTreeView
-			// 
-			this.objectTreeView.Location = new System.Drawing.Point(588, 247);
-			this.objectTreeView.Name = "objectTreeView";
-			this.objectTreeView.SelectedNodes = ((System.Collections.Generic.List<System.Windows.Forms.TreeNode>)(resources.GetObject("objectTreeView.SelectedNodes")));
-			this.objectTreeView.Size = new System.Drawing.Size(284, 189);
-			this.objectTreeView.TabIndex = 8;
-			this.objectTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.objectTreeView_AfterSelect);
 			// 
 			// MainForm
 			// 
@@ -399,6 +409,7 @@
 		private System.Windows.Forms.ToolStripMenuItem newProjectToolStripMenuItem;
 		private System.Windows.Forms.ToolStripButton layerSelectTop;
 		private System.Windows.Forms.ToolStripButton layerSelectBottom;
+		private System.Windows.Forms.ToolStripButton toolText;
 	}
 }
 

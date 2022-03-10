@@ -393,6 +393,13 @@ namespace CircuitReverse
 			ActiveTool = new PinTool(GetSelectedLayers(), IsMouseOverImgPanel());
 		}
 
+		private void BeginText(object s, EventArgs e)
+		{
+			CancelTool();
+			toolText.Checked = true;
+			ActiveTool = new TextTool(GetSelectedLayers(), IsMouseOverImgPanel());
+		}
+
 		public void CancelTool(object s = null, EventArgs e = null)
 		{
 			ActiveTool = new SelectTool();
@@ -496,6 +503,5 @@ namespace CircuitReverse
 			// refresh objectTreeView texts
 			RefreshObjectTreeView();
 		}
-
 	}
 }

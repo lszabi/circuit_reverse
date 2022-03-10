@@ -143,6 +143,7 @@ namespace CircuitReverse
 		// Load object from the objects.txt file
 		public static AbstractObject ImportObject(string descriptor)
 		{
+			// TODO rewrite to use CustomProperties
 			var strarr = descriptor.Split(' ');
 			if (strarr.Length < 1)
 			{
@@ -184,6 +185,21 @@ namespace CircuitReverse
 				return ret;
 			}
 
+			if (strarr[0] == "TEXT")
+			{
+				// Format: TEXT L{layer} '{text}' {component} '{netname}' #{color} {location} {angle}
+				var l = (LayerEnum)Enum.Parse(typeof(LayerEnum), strarr[1].Substring(1));
+				var ret = new TextObject(l);
+
+				ret.Text = strarr[2].Substring(1, strarr[2].Length - 2);
+				ret.Component = strarr[3];
+
+				ret.NetName = strarr[4].Substring(1, strarr[4].Length - 2);
+				ret.ObjectColor = Color.FromArgb(int.Parse(strarr[5].Substring(1), NumberStyles.HexNumber));
+				ret.Location = new RelativePoint(strarr[6]);
+
+				return ret;
+			}
 			return null;
 		}
 	}
@@ -287,7 +303,7 @@ namespace CircuitReverse
 		// Draw pin on panel
 		public override void DrawObjectGraphics(PanelTransform tform, Graphics g, bool selected = false)
 		{
-			var loc = tform(new RelativePoint(Location.X, Location.Y));
+			var loc = tform(Location);
 
 			if (selected)
 			{
@@ -328,6 +344,65 @@ namespace CircuitReverse
 			if (property.Description == "Number")
 			{
 				Number = property.Value as string;
+			}
+		}
+	}
+
+	public class TextObject : AbstractObject
+	{
+		public string Text = "Text";
+		public RelativePoint Location = new RelativePoint();
+
+		public TextObject(LayerEnum l) : base(l)
+		{
+			ObjectColor = Color.Gold;
+			Size = 12;
+		}
+
+		public TextObject(TextObject o) : base(o)
+		{
+			Text = o.Text;
+			Location = o.Location;
+		}
+
+		public override void DrawObjectGraphics(PanelTransform tform, Graphics g, bool selected = false)
+		{
+			var loc = tform(Location);
+
+			// TODO implement highlight, angle
+
+			using (var b = new SolidBrush(ObjectColor))
+			{
+				using (var f = new Font("Arial", Size))
+				{
+					g.DrawString(Text, f, b, loc.X, loc.Y);
+				}
+			}
+		}
+
+		public override string ExportObject()
+		{
+			return string.Format("TEXT L{0} '{1}' {2} '{3}' #{4} {5} {6}", layer.ToString(), Text, Component, NetName, ObjectColor.ToArgb().ToString("X8"), Location.ToString(), 0);
+		}
+
+		public override string ToString()
+		{
+			return string.Format("TEXT : '{0}'", Text);
+		}
+
+		public override List<CustomProperty> GetProperties()
+		{
+			var props = base.GetProperties();
+			props.Add(new CustomProperty("Text", Text, "Visual"));
+			return props;
+		}
+
+		public override void ChangeProperty(CustomPropertyDescriptor property)
+		{
+			base.ChangeProperty(property);
+			if (property.Description == "Text")
+			{
+				Text = property.Value as string;
 			}
 		}
 	}
@@ -519,6 +594,62 @@ namespace CircuitReverse
 			if (show)
 			{
 				pin.DrawObject(target_layer, tform, g);
+			}
+		}
+
+		public override void MouseFocusHandler(bool hover)
+		{
+			show = hover;
+		}
+
+		public override void KeyHandler(Keys key)
+		{
+		}
+	}
+
+	public class TextTool : AbstractTool
+	{
+		TextObject TextObj;
+		bool show = false;
+
+		public TextTool(LayerEnum layer, bool mouseover = false) : base(layer)
+		{
+			TextObj = new TextObject(ActiveLayer);
+			show = mouseover;
+		}
+
+		public override AbstractObject ResetAndGetObject()
+		{
+			return new TextObject(TextObj);
+		}
+
+		public override ToolAction ClickHandler(MouseEventArgs e)
+		{
+			// left click places the text
+			if (e.Button == MouseButtons.Left)
+			{
+				return ToolAction.RESET;
+			}
+
+			// right click exits tool
+			if (e.Button == MouseButtons.Right)
+			{
+				return ToolAction.ABORT;
+			}
+
+			return ToolAction.NONE;
+		}
+
+		public override void MoveHandler(RelativePoint p)
+		{
+			TextObj.Location = p;
+		}
+
+		public override void PaintHandler(LayerEnum target_layer, PanelTransform tform, Graphics g)
+		{
+			if (show)
+			{
+				TextObj.DrawObject(target_layer, tform, g);
 			}
 		}
 
