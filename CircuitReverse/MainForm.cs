@@ -410,10 +410,12 @@ namespace CircuitReverse
 					ObjectList.RemoveAt(i);
 				}
 			}
+			RefreshObjectTreeView();
 		}
 
 		public void RefreshObjectTreeView()
 		{
+			objectTreeView.Nodes.Clear();
 			for (int i = 0; i < ObjectList.Count; i++)
 			{
 				var t = new TreeNode(ObjectList[i].ToString())
@@ -421,6 +423,10 @@ namespace CircuitReverse
 					Tag = i
 				};
 				objectTreeView.Nodes.Add(t);
+				if (ObjectList[i].Selected)
+				{
+					objectTreeView.ToggleNode(t, true);
+				}
 			}
 		}
 
@@ -429,53 +435,67 @@ namespace CircuitReverse
 			return objectTreeView.SelectedNodes.Exists(x => (int)x.Tag == i);
 		}
 
-		/*
-		private void objectList_SelectedValueChanged(object sender, EventArgs e)
+		private void objectTreeView_AfterSelect(object sender, TreeViewEventArgs e)
 		{
 			ObjectProperties.Clear();
-			
+
 			// get properties from first item
-			var selected = objectList.SelectedItems;
-			if (selected.Count < 1)
+			foreach (var item in objectTreeView.SelectedNodes)
 			{
+				ObjectList[(int)item.Tag].Selected = true;
+			}
+
+			if (objectTreeView.SelectedNodes.Count < 1)
+			{
+				// nothing is selected, no properties to show
 				objectPropertyGrid.Refresh();
 				return;
 			}
 
-			var first = selected[0] as AbstractObject;
-			var properties = first.GetProperties();
+			var properties = new List<CustomProperty>();
+			bool first = true;
 
-			// remove all properties which are not in all items
-			for (int i = 1; i < selected.Count; i++)
+			foreach (var item in ObjectList)
 			{
-				var obj = selected[i] as AbstractObject;
-				var props = obj.GetProperties();
-				for (int k = properties.Count - 1; k >= 0; k--)
+				if (item.Selected)
 				{
-					if (!props.Exists(x => x.Name == properties[k].Name))
+					if (first)
 					{
-						properties.RemoveAt(k);
+						// add the properties of the first item
+						properties = item.GetProperties();
+						first = false;
+					}
+					else
+					{
+						// remove all properties which are not in all items
+						var props = item.GetProperties();
+						for (int k = properties.Count - 1; k >= 0; k--)
+						{
+							if (!props.Exists(x => x.Name == properties[k].Name))
+							{
+								properties.RemoveAt(k);
+							}
+						}
 					}
 				}
 			}
 
 			ObjectProperties.Add(properties.ToArray());
 			objectPropertyGrid.Refresh();
-		}*/
+		}
 
 		private void objectPropertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
-		{/*
+		{
 			// Refresh changed properties in objects
 			var change = e.ChangedItem.PropertyDescriptor as CustomPropertyDescriptor;
-			foreach (var item in objectList.SelectedItems)
+			foreach (var item in objectTreeView.SelectedNodes)
 			{
-				var p = item as AbstractObject;
-				p.ChangeProperty(change);
+				ObjectList[(int)item.Tag].ChangeProperty(change);
 			}
 
-			// refresh objectList texts
-			objectList.DrawMode = DrawMode.OwnerDrawVariable;
-			objectList.DrawMode = DrawMode.Normal;*/
+			// refresh objectTreeView texts
+			RefreshObjectTreeView();
 		}
+
 	}
 }

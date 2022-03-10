@@ -335,6 +335,7 @@
 			this.objectTreeView.SelectedNodes = ((System.Collections.Generic.List<System.Windows.Forms.TreeNode>)(resources.GetObject("objectTreeView.SelectedNodes")));
 			this.objectTreeView.Size = new System.Drawing.Size(284, 189);
 			this.objectTreeView.TabIndex = 8;
+			this.objectTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.objectTreeView_AfterSelect);
 			// 
 			// MainForm
 			// 

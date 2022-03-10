@@ -551,7 +551,7 @@ namespace CircuitReverse
 			node.EnsureVisible();
 		}
 
-		private void ToggleNode( TreeNode node, bool bSelectNode )
+		public void ToggleNode( TreeNode node, bool bSelectNode )
 		{
 			if( bSelectNode )
 			{

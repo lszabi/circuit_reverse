@@ -70,6 +70,8 @@ namespace CircuitReverse
 		public int Size = 1;
 		public Color ObjectColor = Color.White;
 
+		public bool Selected = false;
+
 		public AbstractObject(LayerEnum l)
 		{
 			layer = l;
@@ -251,7 +253,7 @@ namespace CircuitReverse
 
 		public override string ToString()
 		{
-			return string.Format("WIRE : Net {0} : {1}", NetName, ObjectColor.ToKnownColor().ToString());
+			return string.Format("WIRE : Net {0}", NetName);
 		}
 
 		public override List<CustomProperty> GetProperties()
@@ -310,7 +312,7 @@ namespace CircuitReverse
 
 		public override string ToString()
 		{
-			return string.Format("PIN : {0}.{1} : Net {2} : {3}", Component, Number, NetName, ObjectColor.ToKnownColor().ToString());
+			return string.Format("PIN : {0}.{1} : Net {2}", Component, Number, NetName);
 		}
 
 		public override List<CustomProperty> GetProperties()
