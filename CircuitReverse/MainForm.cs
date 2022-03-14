@@ -48,12 +48,15 @@ namespace CircuitReverse
 			int left = 12;
 
 			// Resize TopPanel
-			TopPanel.Size = new Size(thirdwidth, fullheight);
+			//TopPanel.Size = new Size(thirdwidth, fullheight);
+			TopPanel.Size = new Size(2 * thirdwidth + 6, halfheight);
 			left += thirdwidth + 6;
 
 			// Align BottomPanel to TopPanel
-			BottomPanel.Size = new Size(thirdwidth, fullheight);
-			BottomPanel.Location = new Point(left, BottomPanel.Location.Y);
+			//BottomPanel.Size = new Size(thirdwidth, fullheight);
+			//BottomPanel.Location = new Point(left, BottomPanel.Location.Y);
+			BottomPanel.Size = new Size(2 * thirdwidth + 6, halfheight);
+			BottomPanel.Location = new Point(TopPanel.Location.X, TopPanel.Location.Y + halfheight + 6);
 			left += thirdwidth + 6;
 
 			// Align objectPropertyGrid to BottomPanel
@@ -446,7 +449,11 @@ namespace CircuitReverse
 		{
 			ObjectProperties.Clear();
 
-			// get properties from first item
+			// set selected objects
+			foreach (var item in ObjectList)
+			{
+				item.Selected = false;
+			}
 			foreach (var item in objectTreeView.SelectedNodes)
 			{
 				ObjectList[(int)item.Tag].Selected = true;

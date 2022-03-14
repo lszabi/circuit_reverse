@@ -7,4 +7,6 @@
  - AbstractObject importer rewrite to use CustomProperties (JSON-like)
  - ImagePanel layout (side-by-side or above-below)
  - Replace RelativePoint with PointF
+ - Object selection by clicking, object tooltips
+ - Auto net naming
  
