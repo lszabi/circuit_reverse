@@ -1,11 +1,10 @@
 ## TODO List
 
- - Text object highlighting and angle setting, use Font property
+ - Text object highlighting
  - objectTreeView selection bugfix
  - objectTreeView grouping
  - ActiveTool object saving
  - AbstractObject importer rewrite to use CustomProperties (JSON-like)
- - ImagePanel layout (side-by-side or above-below)
  - Replace RelativePoint with PointF
  - Object selection by clicking, object tooltips
  - Auto net naming

@@ -58,6 +58,9 @@
 			this.layerSelectBottom = new System.Windows.Forms.ToolStripButton();
 			this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
 			this.objDelete = new System.Windows.Forms.ToolStripButton();
+			this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.horizontalLayoutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.verticalLayoutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.objectTreeView = new CircuitReverse.MultiSelectTreeview();
 			this.BottomPanel = new CircuitReverse.BufferedPanel();
 			this.TopPanel = new CircuitReverse.BufferedPanel();
@@ -174,7 +177,8 @@
 			// menuStripMain
 			// 
 			this.menuStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem});
+            this.fileToolStripMenuItem,
+            this.viewToolStripMenuItem});
 			this.menuStripMain.Location = new System.Drawing.Point(0, 0);
 			this.menuStripMain.Name = "menuStripMain";
 			this.menuStripMain.Size = new System.Drawing.Size(884, 24);
@@ -312,6 +316,31 @@
 			this.objDelete.ToolTipText = "Delete object (Del)";
 			this.objDelete.Click += new System.EventHandler(this.DeleteObject);
 			// 
+			// viewToolStripMenuItem
+			// 
+			this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.horizontalLayoutToolStripMenuItem,
+            this.verticalLayoutToolStripMenuItem});
+			this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
+			this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+			this.viewToolStripMenuItem.Text = "View";
+			// 
+			// horizontalLayoutToolStripMenuItem
+			// 
+			this.horizontalLayoutToolStripMenuItem.Checked = true;
+			this.horizontalLayoutToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.horizontalLayoutToolStripMenuItem.Name = "horizontalLayoutToolStripMenuItem";
+			this.horizontalLayoutToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+			this.horizontalLayoutToolStripMenuItem.Text = "Horizontal layout";
+			this.horizontalLayoutToolStripMenuItem.Click += new System.EventHandler(this.horizontalLayoutToolStripMenuItem_Click);
+			// 
+			// verticalLayoutToolStripMenuItem
+			// 
+			this.verticalLayoutToolStripMenuItem.Name = "verticalLayoutToolStripMenuItem";
+			this.verticalLayoutToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+			this.verticalLayoutToolStripMenuItem.Text = "Vertical layout";
+			this.verticalLayoutToolStripMenuItem.Click += new System.EventHandler(this.verticalLayoutToolStripMenuItem_Click);
+			// 
 			// objectTreeView
 			// 
 			this.objectTreeView.Location = new System.Drawing.Point(588, 247);
@@ -324,9 +353,9 @@
 			// BottomPanel
 			// 
 			this.BottomPanel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.BottomPanel.Location = new System.Drawing.Point(300, 52);
+			this.BottomPanel.Location = new System.Drawing.Point(297, 52);
 			this.BottomPanel.Name = "BottomPanel";
-			this.BottomPanel.Size = new System.Drawing.Size(282, 384);
+			this.BottomPanel.Size = new System.Drawing.Size(285, 384);
 			this.BottomPanel.TabIndex = 2;
 			this.BottomPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.ImgPanelPaint);
 			this.BottomPanel.MouseClick += new System.Windows.Forms.MouseEventHandler(this.ImgPanelMouseClick);
@@ -337,9 +366,9 @@
 			// TopPanel
 			// 
 			this.TopPanel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.TopPanel.Location = new System.Drawing.Point(12, 52);
+			this.TopPanel.Location = new System.Drawing.Point(6, 52);
 			this.TopPanel.Name = "TopPanel";
-			this.TopPanel.Size = new System.Drawing.Size(282, 384);
+			this.TopPanel.Size = new System.Drawing.Size(285, 384);
 			this.TopPanel.TabIndex = 1;
 			this.TopPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.ImgPanelPaint);
 			this.TopPanel.MouseClick += new System.Windows.Forms.MouseEventHandler(this.ImgPanelMouseClick);
@@ -410,6 +439,9 @@
 		private System.Windows.Forms.ToolStripButton layerSelectTop;
 		private System.Windows.Forms.ToolStripButton layerSelectBottom;
 		private System.Windows.Forms.ToolStripButton toolText;
+		private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem horizontalLayoutToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem verticalLayoutToolStripMenuItem;
 	}
 }
 

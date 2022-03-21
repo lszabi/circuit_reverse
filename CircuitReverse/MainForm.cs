@@ -25,6 +25,9 @@ namespace CircuitReverse
 		// Property list container
 		private PropertyList ObjectProperties = new PropertyList();
 
+		// Set this to true to reorder the form to vertical layout
+		bool VerticalLayout = false;
+
 		public MainForm()
 		{
 			InitializeComponent();
@@ -36,36 +39,86 @@ namespace CircuitReverse
 		private void MainForm_Load(object sender, EventArgs e)
 		{
 			objectPropertyGrid.SelectedObject = ObjectProperties;
+			MainForm_Resize(sender, e);
 		}
 
 		// Resize event to make form responsive
 		private void MainForm_Resize(object sender, EventArgs e)
 		{
-			// Calculate positions and widths
-			int thirdwidth = (Size.Width - 52) / 3;
-			int fullheight = Size.Height - 116;
-			int halfheight = (fullheight - 6) / 2;
-			int left = 12;
+			// Define positions and sizes
+			const int spacing = 6;
+			const int left = 6;
+			const int top = 52;
 
-			// Resize TopPanel
-			//TopPanel.Size = new Size(thirdwidth, fullheight);
-			TopPanel.Size = new Size(2 * thirdwidth + 6, halfheight);
-			left += thirdwidth + 6;
+			int thirdwidth = (Size.Width - 4 * spacing - 18) / 3;
 
-			// Align BottomPanel to TopPanel
-			//BottomPanel.Size = new Size(thirdwidth, fullheight);
-			//BottomPanel.Location = new Point(left, BottomPanel.Location.Y);
-			BottomPanel.Size = new Size(2 * thirdwidth + 6, halfheight);
-			BottomPanel.Location = new Point(TopPanel.Location.X, TopPanel.Location.Y + halfheight + 6);
-			left += thirdwidth + 6;
+			int fullheight = Size.Height - 120;
+			int halfheight = (fullheight - spacing) / 2;
 
-			// Align objectPropertyGrid to BottomPanel
-			objectPropertyGrid.Size = new Size(thirdwidth, halfheight);
-			objectPropertyGrid.Location = new Point(left, objectPropertyGrid.Location.Y);
+			if (VerticalLayout)
+			{
+				// Resize and align TopPanel
+				TopPanel.Location = new Point(
+					left,
+					top
+				);
+				TopPanel.Size = new Size(
+					2 * thirdwidth + spacing,
+					halfheight
+				);
 
-			// Align objectTreeView to objectPropertyGrid
-			objectTreeView.Size = new Size(thirdwidth, halfheight);
-			objectTreeView.Location = new Point(left, 52 + 6 + halfheight);
+				// Resize and align BottomPanel
+				BottomPanel.Location = new Point(
+					left,
+					top + halfheight + spacing
+				);
+				BottomPanel.Size = new Size(
+					2 * thirdwidth + spacing,
+					halfheight
+				);
+			}
+			else
+			{
+				// Resize and align TopPanel
+				TopPanel.Location = new Point(
+					left,
+					top
+				);
+				TopPanel.Size = new Size(
+					thirdwidth,
+					fullheight
+				);
+
+				// Resize and align BottomPanel
+				BottomPanel.Location = new Point(
+					left + thirdwidth + spacing,
+					top
+				);
+				BottomPanel.Size = new Size(
+					thirdwidth,
+					fullheight
+				);
+			}
+
+			// Resize and align objectPropertyGrid
+			objectPropertyGrid.Location = new Point(
+				left + thirdwidth + spacing + thirdwidth + spacing,
+				top
+			);
+			objectPropertyGrid.Size = new Size(
+				thirdwidth,
+				halfheight
+			);
+
+			// Resize and align bjectTreeView
+			objectTreeView.Location = new Point(
+				left + thirdwidth + spacing + thirdwidth + spacing,
+				top + halfheight + spacing
+			);
+			objectTreeView.Size = new Size(
+				thirdwidth,
+				halfheight
+			);
 		}
 
 		// Load images by using LoadImageForm as a dialog
@@ -408,6 +461,7 @@ namespace CircuitReverse
 			ActiveTool = new SelectTool();
 			toolWire.Checked = false;
 			toolPin.Checked = false;
+			toolText.Checked = false;
 			objectTreeView.SelectedNodes = null;
 		}
 
@@ -509,6 +563,22 @@ namespace CircuitReverse
 
 			// refresh objectTreeView texts
 			RefreshObjectTreeView();
+		}
+
+		private void horizontalLayoutToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			horizontalLayoutToolStripMenuItem.Checked = true;
+			verticalLayoutToolStripMenuItem.Checked = false;
+			VerticalLayout = false;
+			MainForm_Resize(sender, e);
+		}
+
+		private void verticalLayoutToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			horizontalLayoutToolStripMenuItem.Checked = false;
+			verticalLayoutToolStripMenuItem.Checked = true;
+			VerticalLayout = true;
+			MainForm_Resize(sender, e);
 		}
 	}
 }

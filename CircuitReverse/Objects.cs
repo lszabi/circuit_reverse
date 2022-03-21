@@ -13,7 +13,7 @@ namespace CircuitReverse
 		public RelativePoint location;
 		public bool show;
 	}
-
+	
 	public struct RelativePoint
 	{
 		public double X, Y;
@@ -42,7 +42,7 @@ namespace CircuitReverse
 			return string.Format("({0};{1})", X.ToString(CultureInfo.InvariantCulture), Y.ToString(CultureInfo.InvariantCulture));
 		}
 	}
-
+	
 	public enum LayerEnum
 	{
 		NONE = 0,
@@ -274,7 +274,9 @@ namespace CircuitReverse
 
 		public override List<CustomProperty> GetProperties()
 		{
-			return base.GetProperties();
+			var ret = base.GetProperties();
+			ret.Add(new CustomProperty("Points", WirePoints, "Line"));
+			return ret;
 		}
 
 		public override void ChangeProperty(CustomPropertyDescriptor property)
@@ -351,6 +353,8 @@ namespace CircuitReverse
 	public class TextObject : AbstractObject
 	{
 		public string Text = "Text";
+		public Font TextFont = new Font("Arial", 12);
+		public float Angle = 0;
 		public RelativePoint Location = new RelativePoint();
 
 		public TextObject(LayerEnum l) : base(l)
@@ -365,19 +369,44 @@ namespace CircuitReverse
 			Location = o.Location;
 		}
 
+		public void SetAngle(float a)
+		{
+			while (a < 0)
+			{
+				a += 360;
+			}
+			while (a > 360)
+			{
+				a -= 360;
+			}
+			Angle = a;
+		}
+
 		public override void DrawObjectGraphics(PanelTransform tform, Graphics g, bool selected = false)
 		{
 			var loc = tform(Location);
 
-			// TODO implement highlight, angle
+			g.TranslateTransform(loc.X, loc.Y);
+			g.RotateTransform(Angle);
+
+			if (selected)
+			{
+				using (var b = new SolidBrush(Color.FromArgb(180, ObjectColor)))
+				{
+					using (var f = new Font(TextFont, FontStyle.Bold))
+					{
+						g.DrawString(Text, f, b, 0, 0); // TODO replace with another method
+					}
+				}
+			}
 
 			using (var b = new SolidBrush(ObjectColor))
 			{
-				using (var f = new Font("Arial", Size))
-				{
-					g.DrawString(Text, f, b, loc.X, loc.Y);
-				}
+				g.DrawString(Text, TextFont, b, 0, 0);
 			}
+
+			g.RotateTransform(-Angle);
+			g.TranslateTransform(-loc.X, -loc.Y);
 		}
 
 		public override string ExportObject()
@@ -394,6 +423,8 @@ namespace CircuitReverse
 		{
 			var props = base.GetProperties();
 			props.Add(new CustomProperty("Text", Text, "Visual"));
+			props.Add(new CustomProperty("Font", TextFont, "Visual"));
+			props.Add(new CustomProperty("Angle", Angle, "Visual"));
 			return props;
 		}
 
@@ -403,6 +434,14 @@ namespace CircuitReverse
 			if (property.Description == "Text")
 			{
 				Text = property.Value as string;
+			}
+			if (property.Description == "Font")
+			{
+				TextFont = property.Value as Font;
+			}
+			if (property.Description == "Angle")
+			{
+				SetAngle((float)property.Value);
 			}
 		}
 	}
@@ -660,6 +699,10 @@ namespace CircuitReverse
 
 		public override void KeyHandler(Keys key)
 		{
+			if (key == Keys.Space)
+			{
+				TextObj.SetAngle(TextObj.Angle + 90);
+			}
 		}
 	}
 }
