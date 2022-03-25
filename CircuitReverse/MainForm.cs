@@ -5,6 +5,8 @@ using System.Windows.Forms;
 using System.IO;
 using System.IO.Compression;
 using System.Collections.Generic;
+using System.Drawing.Drawing2D;
+using System.Drawing.Text;
 
 namespace CircuitReverse
 {
@@ -13,20 +15,25 @@ namespace CircuitReverse
 		// Absolute path for project file
 		public string ProjectFilePath = "";
 
-		public Crosshair crosshair = new Crosshair() { location = new RelativePoint(0, 0), show = false };
+		public Crosshair crosshair = new Crosshair() { location = new PointF(0, 0), show = false };
 
 		// Active command
 		public AbstractTool ActiveTool = new SelectTool();
 
 		// List containing all objects
 		// made static, so the Select Tool can see it
-		public static List<AbstractObject> ObjectList = new List<AbstractObject>();
+		public List<AbstractObject> ObjectList = new List<AbstractObject>();
 
 		// Property list container
 		private PropertyList ObjectProperties = new PropertyList();
 
 		// Set this to true to reorder the form to vertical layout
 		bool VerticalLayout = false;
+
+		public void SetStatusText(string value)
+		{
+			statusStripMain.Items["statusLabelDefault"].Text = value;
+		}
 
 		public MainForm()
 		{
@@ -156,6 +163,11 @@ namespace CircuitReverse
 			var p = sender as BufferedPanel;
 			var g = e.Graphics;
 
+			g.InterpolationMode = InterpolationMode.High;
+			g.SmoothingMode = SmoothingMode.AntiAlias;
+			g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+			g.CompositingQuality = CompositingQuality.HighQuality;
+
 			if (!p.ImageLoaded())
 			{
 				// Nothing to paint if no image is loaded
@@ -169,16 +181,11 @@ namespace CircuitReverse
 			// Draw all objects, highlight the selected ones
 			for (int i = 0; i < ObjectList.Count; i++)
 			{
-				AbstractObject obj = ObjectList[i] as AbstractObject;
-				obj.DrawObject(p.Layer, p.RelativeToPanel, g, IsObjectIndexSelected(i));
+				AbstractObject obj = ObjectList[i];
+				obj.DrawObject(p.Layer, p.RelativeToPanel, g, obj.Selected);
 			}
 
 			p.DrawPanelCrosshair(g, crosshair);
-		}
-
-		private void SetStatusText(string value)
-		{
-			statusStripMain.Items["statusLabelDefault"].Text = value;
 		}
 
 		// Create new project (reset all project related variables)
@@ -469,7 +476,7 @@ namespace CircuitReverse
 		{
 			for (int i = ObjectList.Count - 1; i >= 0; i--)
 			{
-				if (IsObjectIndexSelected(i))
+				if (ObjectList[i].Selected)
 				{
 					ObjectList.RemoveAt(i);
 				}
@@ -492,11 +499,6 @@ namespace CircuitReverse
 					objectTreeView.ToggleNode(t, true);
 				}
 			}
-		}
-
-		public bool IsObjectIndexSelected(int i)
-		{
-			return objectTreeView.SelectedNodes.Exists(x => (int)x.Tag == i);
 		}
 
 		private void objectTreeView_AfterSelect(object sender, TreeViewEventArgs e)

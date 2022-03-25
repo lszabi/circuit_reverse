@@ -10,7 +10,7 @@ namespace CircuitReverse
 	{
 		// PCB image to show
 		public Image img = null;
-		public double ImageScale = 1.0;
+		public float ImageScale = 1.0f;
 		public float ImageWidthScale = 1; // for load image scaling preview
 
 		// Which layer shown by this panel
@@ -78,15 +78,15 @@ namespace CircuitReverse
 		// Get relative corrdinates from panel coordinates (transform)
 		// Panel coordinates: X: [0, width], Y: [0, height], centered on top left
 		// Relative coordinates: X: [-1, 1], Y: [-1, 1], centered on image center
-		public RelativePoint PanelToRelative(Point p)
+		public PointF PanelToRelative(PointF p)
 		{
-			var x = (p.X - Size.Width / 2.0) * 2 / ImageScale / img.Width;
-			var y = (p.Y - Size.Height / 2.0) * 2 / ImageScale / img.Height;
-			return new RelativePoint(x, y);
+			float x = (p.X - Size.Width / 2.0f) * 2 / ImageScale / img.Width;
+			float y = (p.Y - Size.Height / 2.0f) * 2 / ImageScale / img.Height;
+			return new PointF(x, y);
 		}
 
 		// Get panel coordinates from relative coordinates (transform)
-		public Point RelativeToPanel(RelativePoint p)
+		public Point RelativeToPanel(PointF p)
 		{
 			var x = p.X * img.Width * ImageScale * 0.5 + Size.Width / 2.0;
 			var y = p.Y * img.Height * ImageScale * 0.5 + Size.Height / 2.0;

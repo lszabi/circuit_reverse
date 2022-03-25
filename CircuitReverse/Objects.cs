@@ -3,44 +3,16 @@ using System.Drawing;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Globalization;
+using System.Drawing.Drawing2D;
 
 namespace CircuitReverse
 {
-	public delegate Point PanelTransform(RelativePoint p);
+	public delegate Point PanelTransform(PointF p);
 
 	public struct Crosshair
 	{
-		public RelativePoint location;
+		public PointF location;
 		public bool show;
-	}
-	
-	public struct RelativePoint
-	{
-		public double X, Y;
-
-		public RelativePoint(double x, double y)
-		{
-			X = x;
-			Y = y;
-		}
-
-		public RelativePoint(RelativePoint p)
-		{
-			X = p.X;
-			Y = p.Y;
-		}
-
-		public RelativePoint(string str)
-		{
-			var values = str.Substring(1, str.Length - 2).Split(';');
-			X = double.Parse(values[0], CultureInfo.InvariantCulture);
-			Y = double.Parse(values[1], CultureInfo.InvariantCulture);
-		}
-
-		public override string ToString()
-		{
-			return string.Format("({0};{1})", X.ToString(CultureInfo.InvariantCulture), Y.ToString(CultureInfo.InvariantCulture));
-		}
 	}
 	
 	public enum LayerEnum
@@ -65,6 +37,8 @@ namespace CircuitReverse
 	{
 		public LayerEnum layer = LayerEnum.BOTH;
 
+		public readonly string ObjectType;
+
 		public string NetName = "";
 		public string Component = "";
 		public int Size = 1;
@@ -72,13 +46,15 @@ namespace CircuitReverse
 
 		public bool Selected = false;
 
-		public AbstractObject(LayerEnum l)
+		public AbstractObject(LayerEnum l, string t)
 		{
+			ObjectType = t;
 			layer = l;
 		}
 
 		public AbstractObject(AbstractObject o)
 		{
+			ObjectType = o.ObjectType;
 			layer = o.layer;
 			NetName = o.NetName;
 			Component = o.Component;
@@ -140,6 +116,14 @@ namespace CircuitReverse
 			}
 		}
 
+		public static PointF ParsePoint(string str)
+		{
+			var values = str.Substring(1, str.Length - 2).Split(';');
+			float x = float.Parse(values[0], CultureInfo.InvariantCulture);
+			float y = float.Parse(values[1], CultureInfo.InvariantCulture);
+			return new PointF(x, y);
+		}
+
 		// Load object from the objects.txt file
 		public static AbstractObject ImportObject(string descriptor)
 		{
@@ -161,7 +145,7 @@ namespace CircuitReverse
 
 				for (int i = 4; i < strarr.Length; i++)
 				{
-					var p = new RelativePoint(strarr[i]);
+					var p = ParsePoint(strarr[i]);
 					ret.WirePoints.Add(p);
 				}
 
@@ -180,7 +164,7 @@ namespace CircuitReverse
 
 				ret.NetName = strarr[3].Substring(1, strarr[3].Length - 2);
 				ret.ObjectColor = Color.FromArgb(int.Parse(strarr[4].Substring(1), NumberStyles.HexNumber));
-				ret.Location = new RelativePoint(strarr[5]);
+				ret.Location = ParsePoint(strarr[5]);
 
 				return ret;
 			}
@@ -196,7 +180,7 @@ namespace CircuitReverse
 
 				ret.NetName = strarr[4].Substring(1, strarr[4].Length - 2);
 				ret.ObjectColor = Color.FromArgb(int.Parse(strarr[5].Substring(1), NumberStyles.HexNumber));
-				ret.Location = new RelativePoint(strarr[6]);
+				ret.Location = ParsePoint(strarr[6]);
 
 				return ret;
 			}
@@ -206,12 +190,12 @@ namespace CircuitReverse
 
 	public class WireObject : AbstractObject
 	{
-		public List<RelativePoint> WirePoints = new List<RelativePoint>();
+		public List<PointF> WirePoints = new List<PointF>();
 
-		public RelativePoint ActivePoint = new RelativePoint(0, 0);
+		public PointF ActivePoint = new PointF(0, 0);
 		public bool ShowActivePoint = false;
 
-		public WireObject(LayerEnum l = LayerEnum.BOTH) : base(l)
+		public WireObject(LayerEnum l = LayerEnum.BOTH) : base(l, "WIRE")
 		{
 			ObjectColor = Color.Red;
 			Size = 4;
@@ -219,7 +203,7 @@ namespace CircuitReverse
 
 		public WireObject(WireObject w) : base(w)
 		{
-			WirePoints = new List<RelativePoint>(w.WirePoints);
+			WirePoints = new List<PointF>(w.WirePoints);
 		}
 
 		public void AddActivePoint()
@@ -227,7 +211,7 @@ namespace CircuitReverse
 			WirePoints.Add(ActivePoint);
 		}
 
-		private void DrawLine(RelativePoint p1, RelativePoint p2, PanelTransform tform, Graphics g, bool selected)
+		private void DrawLine(PointF p1, PointF p2, PanelTransform tform, Graphics g, bool selected)
 		{
 			if (selected)
 			{
@@ -288,9 +272,9 @@ namespace CircuitReverse
 	public class PinObject : AbstractObject
 	{
 		public string Number = "0";
-		public RelativePoint Location = new RelativePoint();
+		public PointF Location = new PointF();
 
-		public PinObject(LayerEnum l) : base(l)
+		public PinObject(LayerEnum l) : base(l, "PIN")
 		{
 			Size = 2;
 			ObjectColor = Color.Blue;
@@ -355,9 +339,9 @@ namespace CircuitReverse
 		public string Text = "Text";
 		public Font TextFont = new Font("Arial", 12);
 		public float Angle = 0;
-		public RelativePoint Location = new RelativePoint();
+		public PointF Location = new PointF();
 
-		public TextObject(LayerEnum l) : base(l)
+		public TextObject(LayerEnum l) : base(l, "TEXT")
 		{
 			ObjectColor = Color.Gold;
 			Size = 12;
@@ -388,21 +372,16 @@ namespace CircuitReverse
 
 			g.TranslateTransform(loc.X, loc.Y);
 			g.RotateTransform(Angle);
-
-			if (selected)
+			
+			using (var p = new GraphicsPath())
 			{
-				using (var b = new SolidBrush(Color.FromArgb(180, ObjectColor)))
+				p.AddString(Text, TextFont.FontFamily, (int)TextFont.Style, g.DpiY * TextFont.SizeInPoints / 72, new Point(0, 0), new StringFormat());
+				g.FillPath(new SolidBrush(ObjectColor), p);
+				if (selected)
 				{
-					using (var f = new Font(TextFont, FontStyle.Bold))
-					{
-						g.DrawString(Text, f, b, 0, 0); // TODO replace with another method
-					}
+					p.Widen(new Pen(ObjectColor, 3));
+					g.FillPath(new SolidBrush(Color.FromArgb(180, ObjectColor)), p);
 				}
-			}
-
-			using (var b = new SolidBrush(ObjectColor))
-			{
-				g.DrawString(Text, TextFont, b, 0, 0);
 			}
 
 			g.RotateTransform(-Angle);
@@ -463,7 +442,7 @@ namespace CircuitReverse
 		public abstract ToolAction ClickHandler(MouseEventArgs e);
 
 		// Handle mouse movement on the ImagePanel
-		public abstract void MoveHandler(RelativePoint p);
+		public abstract void MoveHandler(PointF p);
 
 		// Handle mouse going in and out of the ImagePanel
 		public abstract void MouseFocusHandler(bool hover);
@@ -491,7 +470,7 @@ namespace CircuitReverse
 			return ToolAction.NONE;
 		}
 
-		public override void MoveHandler(RelativePoint p)
+		public override void MoveHandler(PointF p)
 		{
 		}
 
@@ -563,7 +542,7 @@ namespace CircuitReverse
 			return ToolAction.NONE;
 		}
 
-		public override void MoveHandler(RelativePoint p)
+		public override void MoveHandler(PointF p)
 		{
 			wire.ActivePoint = p;
 		}
@@ -623,7 +602,7 @@ namespace CircuitReverse
 			return ToolAction.NONE;
 		}
 
-		public override void MoveHandler(RelativePoint p)
+		public override void MoveHandler(PointF p)
 		{
 			pin.Location = p;
 		}
@@ -679,7 +658,7 @@ namespace CircuitReverse
 			return ToolAction.NONE;
 		}
 
-		public override void MoveHandler(RelativePoint p)
+		public override void MoveHandler(PointF p)
 		{
 			TextObj.Location = p;
 		}
